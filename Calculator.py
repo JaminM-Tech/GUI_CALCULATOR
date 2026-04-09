@@ -4,57 +4,56 @@ import math                       # Import math module for scientific functions
 # ─────────────────────────────────────────────
 # CREATE MAIN WINDOW
 # ─────────────────────────────────────────────
-root = tk.Tk()                   # Create main window
-root.title("Scientific Calculator")  # Window title
-root.geometry("350x500")         # Set window size
-root.resizable(False, False)     # Disable resizing
-root.configure(bg="#1e1e1e")     # Set background color
+root = tk.Tk()                   
+root.title("Scientific Calculator")  
+root.geometry("380x520")         # ✅ Increased width so buttons fit properly
+root.resizable(False, False)     
+root.configure(bg="#1e1e1e")     
+
+# Configure grid so ALL rows/columns expand evenly
+for i in range(8):   # 8 rows total
+    root.grid_rowconfigure(i, weight=1)
+
+for j in range(4):   # 4 columns total
+    root.grid_columnconfigure(j, weight=1)
 
 # ─────────────────────────────────────────────
 # ENTRY FIELD (DISPLAY SCREEN)
 # ─────────────────────────────────────────────
 entry = tk.Entry(
     root,
-    width=20,
     font=("Arial", 22),
     bd=8,
     justify="right",
     bg="#2d2d2d",
     fg="white"
 )
-entry.grid(row=0, column=0, columnspan=5, pady=10)
+entry.grid(row=0, column=0, columnspan=4, sticky="nsew", padx=10, pady=10)
 
 # ─────────────────────────────────────────────
 # BASIC FUNCTIONS
 # ─────────────────────────────────────────────
 
-# Function to insert numbers/operators into display
 def click(value):
+    """Insert value into the calculator display"""
     entry.insert(tk.END, value)
 
-# Function to clear entire screen
 def clear():
+    """Clear the entire display"""
     entry.delete(0, tk.END)
 
-# Function to delete last character (Backspace)
 def backspace():
+    """Remove last character"""
     entry.delete(len(entry.get()) - 1)
 
-# Function to evaluate expression
 def equal():
+    """Evaluate the mathematical expression"""
     try:
         expression = entry.get()
-
-        # Replace power symbol ^ with Python's **
-        expression = expression.replace("^", "**")
-
-        # Evaluate the expression
+        expression = expression.replace("^", "**")  # Convert power symbol
         result = eval(expression)
-
-        # Display result
         entry.delete(0, tk.END)
         entry.insert(0, result)
-
     except:
         entry.delete(0, tk.END)
         entry.insert(0, "Error")
@@ -63,15 +62,14 @@ def equal():
 # SCIENTIFIC FUNCTIONS
 # ─────────────────────────────────────────────
 
-# Each function gets value from entry, calculates, then displays result
-
 def sin_func():
     try:
         value = float(entry.get())
-        result = math.sin(math.radians(value))  # Convert to radians
+        result = math.sin(math.radians(value))
         entry.delete(0, tk.END)
         entry.insert(0, result)
     except:
+        entry.delete(0, tk.END)
         entry.insert(0, "Error")
 
 def cos_func():
@@ -81,6 +79,7 @@ def cos_func():
         entry.delete(0, tk.END)
         entry.insert(0, result)
     except:
+        entry.delete(0, tk.END)
         entry.insert(0, "Error")
 
 def tan_func():
@@ -90,6 +89,7 @@ def tan_func():
         entry.delete(0, tk.END)
         entry.insert(0, result)
     except:
+        entry.delete(0, tk.END)
         entry.insert(0, "Error")
 
 def log_func():
@@ -99,6 +99,7 @@ def log_func():
         entry.delete(0, tk.END)
         entry.insert(0, result)
     except:
+        entry.delete(0, tk.END)
         entry.insert(0, "Error")
 
 def sqrt_func():
@@ -108,34 +109,33 @@ def sqrt_func():
         entry.delete(0, tk.END)
         entry.insert(0, result)
     except:
+        entry.delete(0, tk.END)
         entry.insert(0, "Error")
 
-# Insert constant π
 def pi_func():
     entry.insert(tk.END, str(math.pi))
 
-# Insert constant e
 def e_func():
     entry.insert(tk.END, str(math.e))
 
 # ─────────────────────────────────────────────
-# KEYBOARD SUPPORT
+# KEYBOARD SUPPORT (FIXED)
 # ─────────────────────────────────────────────
 
 def key_event(event):
     key = event.char
 
-    # Allow numbers and operators
     if key in "0123456789+-*/.":
         click(key)
+        return "break"   # Prevent double input
 
-    # Enter key → calculate
-    elif key == "\r":
+    elif key == "\r":   # Enter key
         equal()
+        return "break"
 
-    # Backspace key → delete last character
     elif event.keysym == "BackSpace":
         backspace()
+        return "break"
 
 root.bind("<Key>", key_event)
 
@@ -146,22 +146,20 @@ btn_bg = "#333"
 btn_fg = "white"
 btn_active = "#555"
 
-# Function to create buttons easily
 def create_button(text, row, col, command):
+    """Create and place a button in the grid"""
     tk.Button(
         root,
         text=text,
-        width=5,
-        height=2,
-        font=("Arial", 12),
+        font=("Arial", 14),
         bg=btn_bg,
         fg=btn_fg,
         activebackground=btn_active,
         command=command
-    ).grid(row=row, column=col, padx=5, pady=5)
+    ).grid(row=row, column=col, sticky="nsew", padx=5, pady=5)
 
 # ─────────────────────────────────────────────
-# STANDARD BUTTONS
+# STANDARD BUTTONS (ARITHMETIC INCLUDED)
 # ─────────────────────────────────────────────
 buttons = [
     ('7',1,0), ('8',1,1), ('9',1,2), ('/',1,3),
@@ -170,7 +168,6 @@ buttons = [
     ('0',4,0), ('.',4,1), ('=',4,2), ('+',4,3),
 ]
 
-# Create standard buttons
 for (text, row, col) in buttons:
     if text == "=":
         create_button(text, row, col, equal)
@@ -181,12 +178,11 @@ for (text, row, col) in buttons:
 # EXTRA FUNCTION BUTTONS
 # ─────────────────────────────────────────────
 
-create_button("C", 5, 0, clear)               # Clear screen
-create_button("⌫", 5, 1, backspace)          # Backspace
-create_button("%", 5, 2, lambda: click("/100"))  # Percentage
-create_button("^", 5, 3, lambda: click("^"))     # Power
+create_button("C", 5, 0, clear)
+create_button("⌫", 5, 1, backspace)
+create_button("%", 5, 2, lambda: click("/100"))
+create_button("^", 5, 3, lambda: click("^"))
 
-# Scientific buttons
 create_button("sin", 6, 0, sin_func)
 create_button("cos", 6, 1, cos_func)
 create_button("tan", 6, 2, tan_func)
